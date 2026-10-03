@@ -1,0 +1,8 @@
+# Motor MDX-Net / VR / MDX23C / BS-Roformer / MelBand-Roformer / SCNet / Demucs (catálogo ~170 modelos)
+# CPU:  pip install "audio-separator[cpu]"     GPU NVIDIA: pip install "audio-separator[gpu]"
+audio-separator[cpu]>=0.47
+# Demucs oficial de Facebook Research (htdemucs, htdemucs_ft, htdemucs_6s, mdx_extra, ...)
+demucs>=4.1.0
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
