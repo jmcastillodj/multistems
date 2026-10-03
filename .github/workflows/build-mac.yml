@@ -16,7 +16,10 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - run: pip install -r requirements-mac.txt
+      - run: |
+          pip install -r requirements-mac.txt
+          # setuptools nuevo rompe el hook pkg_resources de PyInstaller (NullProvider)
+          pip install "setuptools<70"
 
       - name: Build MultiStems.app
         run: |
