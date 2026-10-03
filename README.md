@@ -5,7 +5,12 @@ Demucs (Facebook Research) + el catálogo de [python-audio-separator](https://gi
 (BS-Roformer, MelBand Roformer, MDX23C, MDX-Net/UVR, VR, DrumSep, Karaoke, De-reverb, Crowd, Male/Female…),
 agrupados en las mismas familias que [MVSep](https://mvsep.com/es/algorithms).
 
-## Instalación
+## App de macOS (.dmg)
+Cada ejecución del workflow **Build macOS app** (pestaña *Actions* de GitHub → *Run workflow*) genera `MultiStems-macOS-arm64.dmg`
+(Apple Silicon). Ábrelo, arrastra MultiStems a Aplicaciones y, la primera vez, clic derecho → *Abrir*
+(la app no está firmada con certificado de Apple). Datos y modelos se guardan en `~/Library/Application Support/MultiStems`.
+
+## Instalación desde código
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt      # GPU NVIDIA: cambia a audio-separator[gpu]

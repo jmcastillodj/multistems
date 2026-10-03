@@ -1,0 +1,51 @@
+name: Build macOS app
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    runs-on: macos-14   # Apple Silicon (M1/M2/M3/M4)
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements-mac.txt
+
+      - name: Build MultiStems.app
+        run: |
+          pyinstaller run_app.py --name MultiStems --windowed --noconfirm \
+            --collect-all audio_separator --collect-all demucs --collect-all imageio_ffmpeg \
+            --collect-all webview --collect-all onnxruntime --collect-all librosa \
+            --collect-submodules uvicorn --collect-submodules multistems \
+            --add-data "multistems/static:multistems/static"
+          codesign --force --deep -s - dist/MultiStems.app
+
+      - name: Smoke test (subprocesos dentro de la .app)
+        run: |
+          BIN=dist/MultiStems.app/Contents/MacOS/MultiStems
+          $BIN _run audio_separator.utils.cli:main --version
+          $BIN _run demucs.separate --help | head -3
+          $BIN list | head -5
+
+      - name: Crear DMG
+        run: |
+          mkdir dmg && cp -R dist/MultiStems.app dmg/ && ln -s /Applications dmg/Applications
+          hdiutil create -volname MultiStems -srcfolder dmg -ov -format UDZO MultiStems-macOS-arm64.dmg
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MultiStems-macOS-arm64
+          path: MultiStems-macOS-arm64.dmg
+
+      - name: Publicar en Releases (solo con tag)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: MultiStems-macOS-arm64.dmg

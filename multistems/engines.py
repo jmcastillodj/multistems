@@ -15,6 +15,14 @@ AUDIO_EXT = {".wav", ".flac", ".mp3", ".ogg", ".m4a"}
 MODELS_DIR = Path(os.environ.get("MULTISTEMS_MODELS", Path(__file__).resolve().parent.parent / "models"))
 _PCT = re.compile(r"(\d{1,3})%\|")
 
+def _launcher(target: str) -> list[str]:
+    """Comando para ejecutar un módulo/función en un subproceso, también dentro de la .app congelada
+    (donde sys.executable es el propio binario de la app, no un intérprete de Python)."""
+    if getattr(sys, "frozen", False):
+        return [sys.executable, "_run", target]
+    return [sys.executable, "-m", "multistems", "_run", target]
+
+
 Progress = Callable[[float, str], None]
 
 
@@ -87,7 +95,7 @@ def _device_flag() -> str:
 
 
 def _separate_demucs(model: dict, src: Path, out: Path, o: dict, ctx: Ctx, on_pct, log) -> dict[str, Path]:
-    cmd = [sys.executable, "-m", "demucs.separate", "-n", model["filename"], "-o", str(out),
+    cmd = _launcher("demucs.separate") + ["-n", model["filename"], "-o", str(out),
            "--shifts", str(o.get("shifts", 1)), "--overlap", str(o.get("overlap", 0.25)),
            "-d", _device_flag(), "-j", "0"]
     fmt = o.get("format", "wav").lower()
@@ -104,7 +112,7 @@ def _separate_demucs(model: dict, src: Path, out: Path, o: dict, ctx: Ctx, on_pc
 
 def _separate_asep(model: dict, src: Path, out: Path, o: dict, ctx: Ctx, on_pct, log) -> dict[str, Path]:
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
-    cmd = ["audio-separator", str(src), "--output_dir", str(out), "--output_format", o.get("format", "wav").upper(),
+    cmd = _launcher("audio_separator.utils.cli:main") + [str(src), "--output_dir", str(out), "--output_format", o.get("format", "wav").upper(),
            "--model_file_dir", str(MODELS_DIR), "--log_level", "info"]
     if model["kind"] == "ensemble":
         cmd += ["--ensemble_preset", model["filename"]]
